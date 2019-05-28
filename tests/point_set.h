@@ -30,107 +30,92 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///
-/// @file point.h
+/// @file point_set.h
 /// @author Todd Gamblin tgamblin@llnl.gov
 ///
-#ifndef MUSTER_TEST_POINT_H
-#define MUSTER_TEST_POINT_H
+#ifndef POINT_SET_H
+#define POINT_SET_H
 
-#include <cmath>
-#include <string>
+#ifdef HAVE_CONFIG_H
+#include "muster-config.h"
+#endif // HAVE_CONFIG_H
+
 #include <vector>
+#include <string>
 #include <iostream>
-#include "partition.h"
+#include "point.h"
 
 namespace cluster {
-  
-  /// Simple 2 dimensional point class for testing medoids algorithms.
-  struct point {
+
+  class point_set {
   public:
-    double x, y;
+    point_set();
+    ~point_set();
     
-    /// New point with position (x,y)
-    point(double x, double y);
+    void add_point(point p);
+    void add_point(double x, double y) { add_point(point(x,y)); }
 
-    /// New point at (0,0)
-    point();
+    ///
+    /// Range normalization
+    ///
+    void normalize();
 
-    /// Copy constructor
-    point(const point& other);
+    ///
+    /// Parses a string containing points in parentheses, like this:
+    ///  "(1, 1)  (2, 2) (3, 3)"
+    /// Appends parsed points to points vector.
+    ///
+    void parse_points(const std::string& str);
 
-    // Distance between this point and another. 
-    double distance(const point& other) const {
-      double dx = other.x - x;
-      double dy = other.y - y;
-      return ::sqrt(dx*dx + dy*dy);
-    }
-  
-    point& operator+=(const point& other) {
-      x += other.x;  y += other.y;
-      return *this;
-    }
-
-    point operator+(const point& other) const {
-      point result = *this;
-      result += other;
-      return result;
-    }
-  
-    point& operator*=(const point& other) {
-      x *= other.x;  y *= other.y;
-      return *this;
-    }
-
-    point operator*(const point& other) const {
-      point result = *this;
-      result *= other;
-      return result;
-    }
-  
-    point& operator=(const point& other) { 
-      x = other.x;  y = other.y;
-      return *this;
-    }
-
-    bool operator==(const point& other) { 
-      return x == other.x && y == other.y;
-    }
-
-    bool operator!=(const point& other) { 
-      return !(*this == other);
-    }
-
-    void operator/=(double divisor) {
-      x /= divisor;
-      y /= divisor;
-    }
-
-    point operator/(double divisor) const {
-      point p(x,y);
-      p /= divisor;
-      return p;
-    }
-  };
-
-  std::ostream& operator<<(std::ostream& out, const point& p);
+    ///
+    /// Parses a line containing a point with dimensions separated by a commas:
+    ///  "x, y"
+    /// Appends parsed point to points vector.
+    ///
+    void parse_point_csv(const std::string& str);
     
-  ///
-  /// Draws a set of points in ascii with console colors.  Colors are assigned based on
-  /// the partition provided.  Indices in points vector should correspond to ids in the 
-  /// partition.
-  /// 
-  void draw(std::string label, std::vector<point>& points, const cluster::partition& parts, 
-            std::ostream& out = std::cout);
+    ///
+    /// Loads a csv file.
+    ///
+    void load_csv_file(std::istream& input);
 
 
-  /// Distance bt/w two points
-  struct point_distance {
-    double operator()(const point& left, const point& right) const {
-      return left.distance(right);
-    }
-  };
+    ///
+    /// Write a csv file out, optionally including information about
+    /// a clustering of the points in the file.
+    ///
+    void write_csv_file(std::ostream& out, partition *clustering=NULL);
+
+    /// Get a reference to the actual points vector here.
+    std::vector<point>& points() { return points_; }
+
+    /// Allow indexing.
+    point& operator[](size_t i) { return points_[i]; }
+
+    /// Number of points in this point set.
+    size_t size()  { return points_.size(); }
+
+    double min_x() { return min_x_; }
+    double max_x() { return max_x_; }
+    double min_y() { return min_y_; }
+    double max_y() { return max_y_; }
+    
+  private:
+    std::vector<point> points_;
+
+    double min_x_, max_x_;
+    double min_y_, max_y_;
+
+#ifdef MUSTER_HAVE_MPI
+    friend void scatter(point_set& points, int root, MPI_Comm comm);
+#endif
+  }; // point_set
+  
+
+#ifdef MUSTER_HAVE_MPI
+  void scatter(point_set& points, int root, MPI_Comm comm);
+#endif
 
 } // namespace cluster
 
-#endif // MUSTER_TEST_POINT_H
-
+#endif // POINT_SET_H
