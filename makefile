@@ -42,5 +42,4 @@ testnvcc: $(NVCCOBJS)
 	$(NVCC) $(NVCCFLAGS) $< -o $@
 
 clean:
-	cd tests
-	rm  *.o
+	rm tests/*.o
