@@ -28,14 +28,13 @@ all: testnvcc testcpp
 
 # Compile all cpp objects
 testcpp: $(CPPOBJS)
-	$(CC) -o /tests/$@ $^
 
 # Compile all .cu files
 testnvcc: $(NVCCOBJS)
 
 # Generate .cpp compile command
 %cpp.o: %.cpp
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Generate .cu compile command
 %cu.o: %.cu

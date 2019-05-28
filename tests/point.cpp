@@ -34,11 +34,7 @@
 /// @author Todd Gamblin tgamblin@llnl.gov
 ///
 #include "point.h"
-#include "muster-config.h"
 
-#ifdef MUSTER_HAVE_MPI
-#include "mpi_utils.h"
-#endif // MUSTER_HAVE_MPI
 #include "color.h"
 
 #include <limits>
@@ -56,39 +52,6 @@ namespace cluster {
   point::point() : x(0), y(0) { }
 
   point::point(const point& other) : x(other.x), y(other.y) { }
-
-
-#ifdef MUSTER_HAVE_MPI
-  /// Returns the size of a packed point
-  int point::packed_size(MPI_Comm comm) const {
-    return 2 * mpi_packed_size(1, MPI_DOUBLE, comm);
-  }
-  
-  /// Packs a point into an MPI packed buffer
-  void point::pack(void *buf, int bufsize, int *position, MPI_Comm comm) const {
-    PMPI_Pack(const_cast<double*>(&x), 1, MPI_DOUBLE, buf, bufsize, position, comm);
-    PMPI_Pack(const_cast<double*>(&y), 1, MPI_DOUBLE, buf, bufsize, position, comm);
-  }
-
-  /// Unpacks a point from an MPI packed buffer
-  point point::unpack(void *buf, int bufsize, int *position, MPI_Comm comm) {
-    point p;
-    PMPI_Unpack(buf, bufsize, position, &p.x, 1, MPI_DOUBLE,  comm);
-    PMPI_Unpack(buf, bufsize, position, &p.y, 1, MPI_DOUBLE,  comm);
-    return p;
-  }
-  
-  MPI_Datatype point::mpi_datatype() {
-    static MPI_Datatype type = MPI_DATATYPE_NULL;
-    if (type == MPI_DATATYPE_NULL) {
-      MPI_Type_contiguous(2, MPI_DOUBLE, &type);
-      MPI_Type_commit(&type); 
-    }
-    return type;
-  }
-
-#endif // MUSTER_HAVE_MPI
-
 
   ostream& operator<<(ostream& out, const point& p) {
     return out << "(" << setw(2) << p.x << "," << setw(2) << p.y << ")";
