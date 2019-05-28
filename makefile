@@ -23,21 +23,24 @@ NVCCSRCS := $(wildcard ./tests/*.cu)
 # Substitute all ".cu" file name strings to "cu.o" file name strings
 NVCCOBJS := $(patsubst %.cu,%cu.o,$(NVCCSRCS))
 
-all: testcpp testnvcc
+# Compile everything
+all: testnvcc testcpp
 
+# Compile all cpp objects
 testcpp: $(CPPOBJS)
-	$(CC) -o $@ $^
+	$(CC) -o /tests/$@ $^
 
+# Compile all .cu files
 testnvcc: $(NVCCOBJS)
-	$(NVCC) -o $@ $^
 
+# Generate .cpp compile command
 %cpp.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
 
+# Generate .cu compile command
 %cu.o: %.cu
-	$(NVCC) $(NVCCFLAGS) -c $<
+	$(NVCC) $(NVCCFLAGS) $< -o $@
 
 clean:
-	rm -rf $(TARGET) *.o
-	
-.PHONY: all clean
+	cd tests
+	rm  *.o
