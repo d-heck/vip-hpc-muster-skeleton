@@ -5,11 +5,11 @@
 CC := g++
 NVCC := nvcc
 
-# G++ Flags, include src and external directories for .h includes.
-CFLAGS := -Wall -I./src -I./external
+# G++ Flags, include src and external directories for .h includes. May need to update boost include path to your boost include.
+CFLAGS := -Wall -I./src -I./external -I./../muster/boost_1_69_0/
 
 # NVCC Flags, just include directories for now.
-NVCCFLAGS := -I./src -I./external
+NVCCFLAGS := -I./src -I./external -I./../muster/boost_1_69_0/
 
 # Get all .cpp files from the test directory
 CPPSRCS := $(wildcard ./tests/*.cpp)
